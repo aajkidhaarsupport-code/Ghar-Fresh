@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
 
 export default function Complaints() {
   const [rows, setRows] = useState([]);
@@ -25,7 +26,7 @@ export default function Complaints() {
   return (
     <div>
       <h1 className="text-xl font-semibold mb-3">Complaints</h1>
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
       {rows.length === 0 && <p className="text-gray-500">No complaints.</p>}
       {rows.map(c => {
         const open = ['open', 'in_progress'].includes(c.status);

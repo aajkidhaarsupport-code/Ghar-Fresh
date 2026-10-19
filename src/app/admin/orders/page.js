@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
 
 export default function AdminOrders() {
   const [date, setDate] = useState('');
@@ -47,7 +48,7 @@ export default function AdminOrders() {
     <div>
       <h1 className="text-xl font-semibold mb-3">Orders</h1>
       <input type="date" className="border rounded-lg px-3 py-2 bg-white mb-3" value={date} onChange={e => setDate(e.target.value)} />
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
 
       <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
         <div className="font-medium mb-2">Packing list ({live.length} orders)</div>

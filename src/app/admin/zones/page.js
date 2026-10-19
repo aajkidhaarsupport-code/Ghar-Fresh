@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
 
 const blank = { name: '', city: '', pincode: '', delivery_fee: '0' };
 
@@ -37,15 +38,17 @@ export default function Zones() {
         <input className={inp} placeholder="Delivery fee ₹" type="number" value={form.delivery_fee} onChange={e => setForm({ ...form, delivery_fee: e.target.value })} />
         <button className="bg-brand text-white rounded-lg" onClick={add}>Add area</button>
       </div>
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
       <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="text-left text-gray-500"><th className="p-3">Area</th><th>Pincode</th><th>Fee ₹</th><th>Serviceable</th></tr></thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.id} className="border-t">
-                <td className="p-3">{r.name}{r.city ? `, ${r.city}` : ''}</td>
-                <td>{r.pincode}</td>
+                <td className="p-3"><input className="border rounded px-2 py-1 w-56" defaultValue={r.name}
+                  onBlur={e => e.target.value && e.target.value !== r.name && patch(r.id, { name: e.target.value })} /></td>
+                <td><input className="border rounded px-2 py-1 w-24" defaultValue={r.pincode || ''}
+                  onBlur={e => e.target.value !== (r.pincode || '') && patch(r.id, { pincode: e.target.value })} /></td>
                 <td><input className="border rounded px-2 py-1 w-20" type="number" defaultValue={r.delivery_fee}
                   onBlur={e => Number(e.target.value) !== Number(r.delivery_fee) && patch(r.id, { delivery_fee: Number(e.target.value) })} /></td>
                 <td><input type="checkbox" checked={r.is_serviceable} onChange={e => patch(r.id, { is_serviceable: e.target.checked })} /></td>

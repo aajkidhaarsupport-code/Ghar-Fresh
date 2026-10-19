@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
 
 export default function AdminSubs() {
   const [rows, setRows] = useState([]);
@@ -22,7 +23,7 @@ export default function AdminSubs() {
   return (
     <div>
       <h1 className="text-xl font-semibold mb-3">Subscriptions</h1>
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
       <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="text-left text-gray-500"><th className="p-3">Customer</th><th>Product</th><th>Qty</th><th>Plan</th><th>Next</th><th>Status</th><th></th></tr></thead>

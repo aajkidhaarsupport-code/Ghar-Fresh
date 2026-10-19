@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
 
 export default function Customers() {
   const [rows, setRows] = useState([]);
@@ -37,7 +38,7 @@ export default function Customers() {
         <input className="border rounded-lg px-3 py-2 flex-1 bg-white" placeholder="Search name, email or phone" value={q} onChange={e => setQ(e.target.value)} />
         <button className="bg-brand text-white rounded-lg px-4" onClick={load}>Search</button>
       </div>
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
       <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="text-left text-gray-500"><th className="p-3">Customer</th><th>Contact</th><th>Wallet</th><th></th></tr></thead>

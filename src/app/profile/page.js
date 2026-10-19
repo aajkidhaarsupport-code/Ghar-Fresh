@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useUser } from '@/lib/useUser';
+import Msg from '@/components/Msg';
 
 const empty = { label: '', house_no: '', line1: '', line2: '', landmark: '', society_id: '', delivery_instructions: '' };
 
@@ -20,6 +21,8 @@ export default function Profile() {
       supabase.from('societies').select('*').eq('is_serviceable', true)
     ]);
     setProfile(p.data); setAddresses(a.data || []); setSocieties(s.data || []);
+    const e = p.error || a.error || s.error;
+    if (e) setMsg(e.message);
   }
   useEffect(() => { if (user) load(); }, [user]);
 
@@ -75,7 +78,7 @@ export default function Profile() {
       <input className={inp} placeholder="Delivery instructions" value={form.delivery_instructions} onChange={e => setForm({ ...form, delivery_instructions: e.target.value })} />
       <button className="w-full border border-brand text-brand rounded-xl py-3" onClick={addAddress}>Save address</button>
 
-      {msg && <p className="text-sm mt-3 text-brand">{msg}</p>}
+      <div className="mt-3"><Msg msg={msg} /></div>
       <button className="w-full mt-8 text-red-600 py-3" onClick={logout}>Logout</button>
     </div>
   );

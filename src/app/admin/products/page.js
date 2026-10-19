@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
+import { compressImage } from '@/lib/riderQueue';
 
 const blank = { name: '', pack_size: '', mrp: '', selling_price: '', stock: '', image_url: '', category_id: '' };
 
@@ -45,6 +47,20 @@ export default function Products() {
     setMsg(error ? error.message : 'Category added'); setNewCat(''); load();
   }
 
+  async function uploadPhoto(r, file) {
+    if (!file) return;
+    setMsg('Uploading photo…');
+    try {
+      const dataUrl = await compressImage(file, 1000, 0.8);
+      const blob = await (await fetch(dataUrl)).blob();
+      const path = `${r.id}-${Date.now()}.jpg`;
+      const up = await supabase.storage.from('product-images').upload(path, blob, { contentType: 'image/jpeg' });
+      if (up.error) throw up.error;
+      const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+      await update(r.id, { image_url: data.publicUrl });
+    } catch (e) { setMsg(e.message); }
+  }
+
   const inp = 'border rounded-lg px-3 py-2 bg-white text-sm';
   return (
     <div>
@@ -70,14 +86,22 @@ export default function Products() {
         </div>
       </div>
 
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
       <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
-          <thead><tr className="text-left text-gray-500"><th className="p-3">Product</th><th>Price ₹</th><th>Stock</th><th>Active</th><th>Subscription</th></tr></thead>
+          <thead><tr className="text-left text-gray-500"><th className="p-3">Product</th><th>Photo</th><th>Price ₹</th><th>Stock</th><th>Active</th><th>Subscription</th></tr></thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.id} className="border-t">
                 <td className="p-3">{r.name} <span className="text-gray-500">{r.pack_size}</span></td>
+                <td className="flex items-center gap-2 py-2">
+                  {r.image_url ? <img src={r.image_url} alt="" className="w-12 h-12 object-cover rounded-lg" /> : <div className="w-12 h-12 bg-cream rounded-lg" />}
+                  <label className="text-xs text-brand underline cursor-pointer">Upload
+                    <input type="file" accept="image/*" className="hidden" onChange={e => uploadPhoto(r, e.target.files?.[0])} />
+                  </label>
+                  <input className="border rounded px-2 py-1 w-28 text-xs" placeholder="or paste link" defaultValue={r.image_url || ''}
+                    onBlur={e => (e.target.value || null) !== (r.image_url || null) && update(r.id, { image_url: e.target.value || null })} />
+                </td>
                 <td><input className="border rounded px-2 py-1 w-20" type="number" defaultValue={r.selling_price}
                   onBlur={e => Number(e.target.value) !== Number(r.selling_price) && update(r.id, { selling_price: Number(e.target.value) })} /></td>
                 <td><input className="border rounded px-2 py-1 w-20" type="number" defaultValue={r.stock}

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Msg from '@/components/Msg';
 
 export default function Riders() {
   const [riders, setRiders] = useState([]);
@@ -33,7 +34,7 @@ export default function Riders() {
           <button className="bg-brand text-white rounded-lg px-4" disabled={!contact} onClick={() => setUserRole(contact, role)}>Set role</button>
         </div>
       </div>
-      {msg && <p className="text-sm text-brand mb-2">{msg}</p>}
+      <Msg msg={msg} />
       <div className="bg-white rounded-2xl shadow-sm">
         {riders.map(r => (
           <div key={r.id} className="flex justify-between p-3 border-b last:border-0 text-sm">
