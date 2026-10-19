@@ -3,25 +3,28 @@
 -- Run in the SQL Editor of the GharFresh project. Safe to run again:
 -- it will not duplicate rows, and it fills in images/descriptions on existing ones.
 -- PRICES ARE SAMPLES: change them in Admin > Products.
--- Images are illustrations stored in the website (/products/...); replace with real photo links anytime.
+-- (Everything runs inside ONE block, so it works even in the Supabase SQL Editor.)
 -- =====================================================================
 
-insert into public.societies (name, city, pincode, is_serviceable, delivery_fee)
-select 'Demo Area (rename me)', 'Your City', '000000', true, 0
-where not exists (select 1 from public.societies);
+do $$
+declare r record;
+begin
+  insert into public.societies (name, city, pincode, is_serviceable, delivery_fee)
+  select 'Demo Area (rename me)', 'Jaipur', '000000', true, 0
+  where not exists (select 1 from public.societies);
 
-insert into public.categories (name, slug, sort_order, image_url) values
-  ('Milk', 'milk', 1, null),
-  ('Curd & Drinks', 'curd-drinks', 2, null),
-  ('Paneer', 'paneer', 3, null),
-  ('Ghee & Butter', 'ghee-butter', 4, null),
-  ('Eggs', 'eggs', 5, null),
-  ('Bread', 'bread', 6, null),
-  ('Pantry', 'pantry', 7, null)
-on conflict (slug) do nothing;
+  insert into public.categories (name, slug, sort_order) values
+    ('Milk', 'milk', 1),
+    ('Curd & Drinks', 'curd-drinks', 2),
+    ('Paneer', 'paneer', 3),
+    ('Ghee & Butter', 'ghee-butter', 4),
+    ('Eggs', 'eggs', 5),
+    ('Bread', 'bread', 6),
+    ('Pantry', 'pantry', 7)
+  on conflict (slug) do nothing;
 
-create temp table tmp_items as
-select * from (values
+  for r in
+    select * from (values
   ('milk','Farm Fresh Cow Milk','500 ml',30,28,true,'/products/cow-milk-500ml.svg','Fresh cow milk from partner farms, packed the same morning and delivered before 7:30 AM. Pasteurised, no added preservatives.'),
   ('milk','Farm Fresh Cow Milk','1 L',58,55,true,'/products/cow-milk-1l.svg','Fresh cow milk from partner farms, packed the same morning and delivered before 7:30 AM. Pasteurised, no added preservatives.'),
   ('milk','Buffalo Milk','500 ml',38,36,true,'/products/buffalo-milk-500ml.svg','Thick, creamy full-fat buffalo milk. Great for tea, sweets and curd.'),
@@ -42,26 +45,26 @@ select * from (values
   ('bread','Whole Wheat Bread','400 g',45,42,true,'/products/whole-wheat-bread-400g.svg','Soft whole wheat bread, baked fresh.'),
   ('bread','Multigrain Bread','400 g',55,50,true,'/products/multigrain-bread-400g.svg','Soft multigrain bread with seeds, baked fresh.'),
   ('pantry','Raw Forest Honey','500 g',330,299,false,'/products/raw-forest-honey-500g.svg','Raw, unprocessed honey collected from forest hives.')
-) as t(cat, name, pack, mrp, price, sub_ok, img, descr);
+    ) as t(cat, name, pack, mrp, price, sub_ok, img, descr)
+  loop
+    -- add the product if it is missing
+    insert into public.products (category_id, name, description, image_url, pack_size, mrp,
+                                 selling_price, is_subscription_allowed, stock, quality_info)
+    select c.id, r.name, r.descr, r.img, r.pack, r.mrp, r.price, r.sub_ok, 100,
+           jsonb_build_object('source', 'Partner farms', 'delivery', 'Before 7:30 AM')
+      from public.categories c
+     where c.slug = r.cat
+       and not exists (select 1 from public.products p where p.name = r.name and p.pack_size = r.pack);
 
--- add missing products
-insert into public.products (category_id, name, description, image_url, pack_size, mrp, selling_price,
-                             is_subscription_allowed, stock, quality_info)
-select c.id, t.name, t.descr, t.img, t.pack, t.mrp, t.price, t.sub_ok, 100,
-       jsonb_build_object('source', 'Partner farms', 'delivery', 'Before 7:30 AM')
-from tmp_items t
-join public.categories c on c.slug = t.cat
-where not exists (select 1 from public.products p where p.name = t.name and p.pack_size = t.pack);
-
--- fill image / description / category on rows that already exist (keeps your prices and stock)
-update public.products p
-   set image_url = coalesce(p.image_url, t.img),
-       description = coalesce(p.description, t.descr),
-       category_id = coalesce(p.category_id, c.id)
-  from tmp_items t join public.categories c on c.slug = t.cat
- where p.name = t.name and p.pack_size = t.pack;
-
-drop table tmp_items;
+    -- fill image / description / category on an existing row (keeps your prices and stock)
+    update public.products p
+       set image_url = coalesce(p.image_url, r.img),
+           description = coalesce(p.description, r.descr),
+           category_id = coalesce(p.category_id, c.id)
+      from public.categories c
+     where c.slug = r.cat and p.name = r.name and p.pack_size = r.pack;
+  end loop;
+end $$;
 
 -- result check
 select (select count(*) from public.products) as products,

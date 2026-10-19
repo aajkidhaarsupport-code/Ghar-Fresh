@@ -1,9 +1,9 @@
 'use client';
 import { usePathname } from 'next/navigation';
 
-// Narrow column for customer pages, wide area for admin
+// Wide area for the shop home and admin, narrow column for the other customer pages
 export default function Shell({ children }) {
   const path = usePathname();
-  const wide = path.startsWith('/admin');
+  const wide = path === '/' || path.startsWith('/admin');
   return <main className={`${wide ? 'max-w-5xl' : 'max-w-md'} mx-auto p-4`}>{children}</main>;
 }

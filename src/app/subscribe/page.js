@@ -76,7 +76,7 @@ function Form() {
 
       <label className="text-sm">Delivery address</label>
       {addresses.length === 0 ? (
-        <a href="/profile" className="block text-brand underline mb-3">Add an address first</a>
+        <a href={`/profile?next=${encodeURIComponent('/subscribe?product=' + product.id)}`} className="block text-brand underline mb-3">Add an address first</a>
       ) : (
         <select className={field} value={addr} onChange={e => setAddr(e.target.value)}>
           {addresses.map(a => <option key={a.id} value={a.id}>{a.label || a.house_no} – {a.line1}</option>)}

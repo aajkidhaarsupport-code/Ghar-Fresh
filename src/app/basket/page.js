@@ -63,7 +63,7 @@ export default function Basket() {
           <select className="w-full border rounded-xl px-4 py-3 my-3 bg-white" value={addr} onChange={e => setAddr(e.target.value)}>
             {addresses.map(a => <option key={a.id} value={a.id}>{a.label || a.house_no} – {a.line1}</option>)}
           </select>
-          {addresses.length === 0 && <a href="/profile" className="text-brand underline">Add an address first</a>}
+          {addresses.length === 0 && <a href="/profile?next=/basket" className="text-brand underline">Add an address first</a>}
           <div className="flex justify-between font-semibold mb-3"><span>Items total</span><span>₹{total}</span></div>
           <button disabled={!addr} onClick={checkout} className="w-full bg-brand text-white rounded-xl py-3 font-semibold disabled:opacity-50">
             Pay from wallet

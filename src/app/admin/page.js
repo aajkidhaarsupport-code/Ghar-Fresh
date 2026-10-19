@@ -43,6 +43,7 @@ export default function Dashboard() {
         <button className="border border-brand text-brand rounded-lg px-4 py-2 text-sm" onClick={generateNow}>
           Generate next day's orders now
         </button>
+        <a href="/setup" className="ml-3 text-sm text-brand underline">System check</a>
         {msg && <p className="text-sm text-brand mt-2">{msg}</p>}
       </div>
     </div>

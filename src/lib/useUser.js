@@ -17,6 +17,7 @@ export function useUser(required = true) {
 
 export const cart = {
   get() { try { return JSON.parse(localStorage.getItem('gf_cart') || '{}'); } catch { return {}; } },
-  set(c) { localStorage.setItem('gf_cart', JSON.stringify(c)); },
+  set(c) { localStorage.setItem('gf_cart', JSON.stringify(c)); window.dispatchEvent(new Event('gf-cart')); },
   add(id) { const c = this.get(); c[id] = (c[id] || 0) + 1; this.set(c); },
+  count() { return Object.values(this.get()).reduce((a, b) => a + b, 0); }
 };
